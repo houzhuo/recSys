@@ -1,5 +1,6 @@
 # coding=utf-8
 import numpy as np
+import math
 from sklearn.model_selection import train_test_split
 import random
 from sklearn import datasets
@@ -64,3 +65,42 @@ def Precision(train, test, N):
             if item in tu:
         all += N #对每个用户推荐N个物品
     return hit / (all * 1.0)
+
+
+
+
+def UserSimilarity(train):
+    #build inverse table for item_users
+    item_users = dict
+    for u, items in train.items():  #u是用户 items是用户购买的商品
+        for i in items.keys():
+            if i not in item_users:
+                item_users[i] = set()
+        item_users[i].add(u)
+
+    #calculate co-rated items between users
+        C = dict
+        N = dict
+        for i,users in item_users.items():  #i是商品，u是对应用户
+            for u in users:
+                N[u] += 1
+                for v in users:
+                    if u == v:
+                        continue
+                    C[u][v] += 1
+    #caluclate finial similarity matrix W
+    W = dict()
+    for u, related_users in C.items():
+        for v, cuv in related_users.items():
+            W[u][v] = cuv / math.sqrt(N[u]*N[v])
+    return W  #返回了一个矩阵
+
+def Recommend(user, train, W):
+    rank = dict()
+    interacted_items = train[user]
+    for v, wuv in sorted(W[u].items,key=itemgetter(1),reverse=True)[0:K]:
+        for i, rvi in train[v].items:
+            if i in interacted_items:
+                continue
+            rank[i] += wuv * rvi
+    return rank
