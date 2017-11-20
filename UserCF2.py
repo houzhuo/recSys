@@ -39,6 +39,8 @@ def UserSimilarity():
             item_users[item] = set()  #添加集合
         item_users[item].add(user)    #{movie:set([1,3,4,5,7])}
 
+
+
     C = dict()
     N = dict()
     for i, users in item_users.items():  #别忘了items()
@@ -62,17 +64,28 @@ def UserSimilarity():
 
 def Recommend(user, user_items, W, K):
     rank = dict()
-    interacted_items = user_items  #此用户有过记录的商品
+    interacted_items = user_items[user]  #此用户有过记录的商品
     for v, wuv in sorted(W[user].items(),reverse=True)[0:K]:  #和用户u兴趣最接近的K个用户v
         for i in user_items[v]:       #v的购物列表
             if i not in interacted_items:   #此用户没买过
                 rank.setdefault(i,0)
-            rank[i] += wuv
+                rank[i] += wuv
     return rank
 
 
 
-
+def getUseritem():
+    data = pd.read_csv('movieData/data.csv')
+    X = data['user_id']
+    Y = data['movie_id']
+    user_item = dict()
+    for i in range(X.count()):
+        user = X.iloc[i]
+        item = Y.iloc[i]
+        if user not in user_item:
+            user_item[user] = set()
+        user_item[user].add(item)
+    return user_item
 
 def loadData():
     new_file = file('movieData/ui.txt','w')
@@ -83,4 +96,7 @@ def loadData():
 
 
 if __name__ == '__main__':
-    UserSimilarity()
+    W = UserSimilarity()
+    useritem = getUseritem()
+    rank = Recommend(1,useritem,W,5)
+    print rank

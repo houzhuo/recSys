@@ -6,6 +6,8 @@
 @time: 17/11/17 下午11:58
 """
 import pandas as pd
+import math
+
 def ItemSimilarity():
 
     data = pd.read_csv('movieData/data.csv')
@@ -33,3 +35,19 @@ def ItemSimilarity():
                     continue
                 C[u].setdefault(v,0)
                 C[u][v] += 1
+
+    W = dict()
+    for u , relatedItem in user_item.items():
+        for v, cuv in relatedItem:
+            W[u][v] = cuv / math.sqrt(N[u]*N[v])
+    return W
+
+def Recommendation(user, user_items, W, K):
+    rank = dict()
+    related_items = user_items[user_items]
+    for i in user_items[user]:
+        for j, wuv in sorted(W[i].items(),reverse=True)[0:K]:
+            if j not in related_items:
+                rank.setdefault(i, 0)
+                rank[i] += wuv
+    return rank
