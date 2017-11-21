@@ -34,12 +34,12 @@ def ItemSimilarity():
                 if u == v:
                     continue
                 C[u].setdefault(v,0)
-                C[u][v] += 1
+                C[u][v] += 1/math.log(1 + len(items) * 1.0)
 
     W = dict()
     for u , relatedItem in user_item.items():
         for v, cuv in relatedItem:
-            W[u][v] = cuv / math.sqrt(N[u]*N[v])
+            W[u][v] = cuv/math.sqrt(N[u]*N[v])
     return W
 
 def Recommendation(user, user_items, W, K):
@@ -51,3 +51,13 @@ def Recommendation(user, user_items, W, K):
                 rank.setdefault(i, 0)
                 rank[i] += wuv
     return rank
+
+
+def Recommendation2(user, user_items, W, K):
+    rank = dict()
+    related_items = user_items[user_items]
+    for i , rate in user_items[user]:
+        for j, wuv in sorted(W[i].items(),reverse=True)[0:K]:
+            if j not in related_items:
+                rank.setdefault(i, 0)
+                rank[i] += wuv * rate

@@ -9,7 +9,8 @@
 import pandas as pd
 import math
 
-'''unames = ['user_id','gender','age','occupation','zip']
+'''
+unames = ['user_id','gender','age','occupation','zip']
 users = pd.read_table('movieData/users.dat',sep='::',header = None,names = unames)
 
 mnames = ['movie_id', 'title', 'genres']
@@ -21,9 +22,9 @@ ratings = pd.read_table('movieData/ratings.dat', sep='::', header=None, names=rn
 all_data = pd.merge(pd.merge(ratings,users),movies)
 data = pd.DataFrame(data=all_data,columns = ['user_id','movie_id'])
 data.to_csv('movieData/data.csv')
+
+
 '''
-
-
 def UserSimilarity():
 
     data = pd.read_csv('movieData/data.csv')
@@ -39,11 +40,11 @@ def UserSimilarity():
             item_users[item] = set()  #添加集合
         item_users[item].add(user)    #{movie:set([1,3,4,5,7])}
 
-
+    print '====================item_user==================='
 
     C = dict()
     N = dict()
-    for i, users in item_users.items():  #别忘了items()
+    for i, users in item_users.items():  #别忘了items
         for u in users:
             N.setdefault(u,0)
             N[u] += 1        #用户有过正反馈的集合
@@ -52,24 +53,25 @@ def UserSimilarity():
                 if u == v:
                     continue
                 C[u].setdefault(v,0)
-                C[u][v] += 1 / math.log(1 + len(users))   #用户之间有过关联的矩阵
-
-    #calculate final similarity matrix W
-    W = dict()
+                C[u][v] += 1/math.log(1 + len(users))   #用户之间有过关联的矩阵
+    print '====================cal W==================='
+    #calculate final similarity matrix
+    W = C.copy()
     for u, related_users in C.items():
-        for v, cuv in related_users:
-            W[u][v] = cuv / math.sqrt(N[u] * N[v])
+        for v, cuv in related_users.items():
+            W[u][v] = cuv/math.sqrt(N[u] * N[v])
     return W
 
 
 def Recommend(user, user_items, W, K):
+    print '====================REcommend==================='
     rank = dict()
     interacted_items = user_items[user]  #此用户有过记录的商品
     for v, wuv in sorted(W[user].items(),reverse=True)[0:K]:  #和用户u兴趣最接近的K个用户v
         for i in user_items[v]:       #v的购物列表
             if i not in interacted_items:   #此用户没买过
                 rank.setdefault(i,0)
-                rank[i] += wuv
+                rank[i]+=wuv
     return rank
 
 
@@ -97,6 +99,8 @@ def loadData():
 
 if __name__ == '__main__':
     W = UserSimilarity()
+    print 'W finish'
     useritem = getUseritem()
-    rank = Recommend(1,useritem,W,5)
-    print rank
+    print useritem[2]
+    rank = Recommend(2,useritem,W,10)
+    print rank.items()
